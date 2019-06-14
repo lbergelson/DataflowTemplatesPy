@@ -14,7 +14,7 @@ class MyOptions(PipelineOptions):
             '--input_table',
             type=str,
             help='big query table to read from',
-            default='broad-dsp-spec-ops:joint_genotyping_chr20_10_exomes.pet')
+            default='broad-dsp-spec-ops.joint_genotyping_chr20_10_exomes.pet')
         parser.add_value_provider_argument(
             '--output_bucket',
             type=str,

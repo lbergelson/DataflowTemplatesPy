@@ -14,7 +14,7 @@ class MyOptions(PipelineOptions):
             '--input_table',
             type=str,
             help='big query table to read from',
-            default='broad-dsp-spec-ops:joint_genotyping_chr20_10_exomes')
+            default='broad-dsp-spec-ops:joint_genotyping_chr20_10_exomes.pet')
         parser.add_value_provider_argument(
             '--output_bucket',
             type=str,
@@ -34,7 +34,7 @@ def position_key_ranges(range_multiplier=200000, num_partitions=2000):
 
 
 def get_position_key_range(element):
-    position = element['start_position']
+    position = element['position']
 
     for i in position_key_ranges():
         if position >= i:

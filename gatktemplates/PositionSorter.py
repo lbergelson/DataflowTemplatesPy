@@ -51,7 +51,7 @@ def position_sorter(key_val, output_dir):
     vals = list(key_val[1])
     vals.sort()
 
-    out_file_path = output_dir + str(key) + '.csv'
+    out_file_path = output_dir.get() + str(key) + '.csv'
     out_file = gcsio.GcsIO().open(out_file_path, 'w')
     for pos in vals:
         row = str(key) + ',' + str(pos)
@@ -83,13 +83,12 @@ def run(argv=None):
             )
     )
 
-    output_bucket = str(pipeline_options.output_bucket).strip()
     row_data = (table_data
                 | 'Generate Range Keys' >> beam.Map(lambda element: get_position_key_range(element))
                 | 'Group By Range Keys' >> beam.GroupByKey()
-                | 'Custom Local Sorter' >> beam.Map(lambda key_multi_val: position_sorter(key_multi_val, output_bucket)))
+                | 'Custom Local Sorter' >> beam.Map(lambda key_multi_val: position_sorter(key_multi_val, pipeline_options.output_bucket)))
 
-    row_data | 'Printing data' >> beam.io.WriteToText(str(pipeline_options.other_output_bucket).strip())
+    row_data | 'Printing data' >> beam.io.WriteToText(pipeline_options.other_output_bucket)
 
     result = p.run()
     result.wait_until_finish()

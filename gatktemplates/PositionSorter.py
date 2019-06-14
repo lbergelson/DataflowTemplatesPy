@@ -10,7 +10,7 @@ from apache_beam.io.gcp import gcsio
 class MyOptions(PipelineOptions):
     @classmethod
     def _add_argparse_args(cls, parser):
-        parser.add_value_provider_argument(
+        parser.add_argument(
             '--input_table',
             type=str,
             help='big query table to read from',
@@ -73,7 +73,7 @@ def run(argv=None):
 
     p = beam.Pipeline(options=pipeline_options)
 
-    table = str(pipeline_options.input_table).strip()
+    table = pipeline_options.input_table
     table_data = (
             p
             | 'Query Data from BQ' >>

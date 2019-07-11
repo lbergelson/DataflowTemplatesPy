@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+export PROJECT_ID=broad-dsp-spec-ops
+export BUCKET=lb_spec_ops_test
+  python -m gatktemplates.PositionSorter \
+    --runner DataflowRunner \
+    --project ${PROJECT_ID} \
+    --staging_location gs://${BUCKET}/staging \
+    --temp_location gs://${BUCKET}/temp \
+    --template_location gs://${BUCKET}/templates/PositionSort

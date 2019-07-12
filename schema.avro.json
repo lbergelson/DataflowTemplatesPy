@@ -1,0 +1,144 @@
+{
+  "type": "record",
+  "name": "__root__",
+  "fields": [
+    {
+      "name": "position",
+      "type": [
+        "null",
+        "long"
+      ]
+    },
+    {
+      "name": "values",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "__s_0",
+          "fields": [
+            {
+              "name": "sample",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "state",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "ref",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "alt",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "AS_RAW_MQ",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "AS_RAW_MQRankSum",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "AS_QUALapprox",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "AS_RAW_ReadPosRankSum",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "AS_SB_TABLE",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "AS_VarDP",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "call_GT",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "call_AD",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "call_DP",
+              "type": [
+                "null",
+                "long"
+              ]
+            },
+            {
+              "name": "call_GQ",
+              "type": [
+                "null",
+                "long"
+              ]
+            },
+            {
+              "name": "call_PGT",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "call_PID",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "call_PL",
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

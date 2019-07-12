@@ -10,7 +10,7 @@ class MyOptions(PipelineOptions):
         '--input_table',
         type=str,
         help='big query table to read from',
-        default='broad-dsp-spec-ops.joint_genotyping_chr20_10_exomes.pet')
+        default='broad-dsp-spec-ops.joint_genotyping_chr20_dalio_3_updated')
     parser.add_value_provider_argument(
         '--output_bucket',
         type=str,
@@ -32,6 +32,152 @@ class MyOptions(PipelineOptions):
 
 def run(argv=None):
   from apache_beam.options.pipeline_options import PipelineOptions
+
+  schema_string="""{
+  "type": "record",
+  "name": "__root__",
+  "fields": [
+    {
+      "name": "position",
+      "type": [
+        "null",
+        "long"
+      ]
+    },
+    {
+      "name": "values",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "__s_0",
+          "fields": [
+            {
+              "name": "sample",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "state",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "ref",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "alt",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "AS_RAW_MQ",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "AS_RAW_MQRankSum",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "AS_QUALapprox",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "AS_RAW_ReadPosRankSum",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "AS_SB_TABLE",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "AS_VarDP",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "call_GT",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "call_AD",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "call_DP",
+              "type": [
+                "null",
+                "long"
+              ]
+            },
+            {
+              "name": "call_GQ",
+              "type": [
+                "null",
+                "long"
+              ]
+            },
+            {
+              "name": "call_PGT",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "call_PID",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "call_PL",
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}"""
+
   pipeline_options = PipelineOptions()
   pipeline_options = pipeline_options.view_as(MyOptions)
 
@@ -42,7 +188,10 @@ def run(argv=None):
       p
       | 'Query Data from BQ' >>
       beam.io.Read(beam.io.BigQuerySource(
-          query='select * from `' + table + '`',
+          query="""SELECT *
+FROM `{table}.pet` AS pet
+LEFT OUTER JOIN `{table}.vet` AS vet
+USING (position, sample)""".format(table=table),
           use_standard_sql=True)
       )
   )
@@ -56,19 +205,34 @@ def run(argv=None):
 
   def position_sorter(key_val, output_dir):
     from apache_beam.io.gcp import gcsio
+    import avro.schema
+    from avro.datafile import DataFileWriter
+    from avro.io import DatumWriter
+    from itertools import groupby
 
     key = key_val[0]
     vals = list(key_val[1])
     vals = sorted(vals, key=lambda x: int(x['position']))
 
-    out_file_path = output_dir.get() + "{:06d}.csv".format(key)
-    out_file = gcsio.GcsIO().open(out_file_path, 'w')
-    for pos in vals:
-      row = str(key) + ',' + str(pos['position']) + ':'+ str(pos)
-      out_file.write(row)
-      out_file.write('\n')
-    out_file.close()
+    out_file_path = output_dir.get() + "{:06d}.avro".format(key)
+    out_file = gcsio.GcsIO().open(out_file_path, 'wb')
 
+    schema = avro.schema.parse(schema_string)
+    writer = DataFileWriter(out_file, DatumWriter(), schema)
+
+    def clean_record(record):
+      cleaned = {k:v for (k,v) in record.items() if v is not None}
+      cleaned.pop('position', None)
+      return cleaned
+
+    #for key, group in groupby(things, lambda x: x[0]):
+    for position, values in groupby(vals, lambda x: int(x['position'])):
+      cleaned_values = [ clean_record(record) for record in values]
+      writer.append({"position": position, "values" : cleaned_values})
+
+    writer.close()
+
+    return out_file_path
 
   row_data = (table_data
               | 'Generate Range Keys' >> beam.Map(lambda element: get_position_key_range(element))

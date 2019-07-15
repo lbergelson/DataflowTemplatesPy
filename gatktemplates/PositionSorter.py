@@ -10,7 +10,7 @@ class MyOptions(PipelineOptions):
         '--input_table',
         type=str,
         help='big query table to read from',
-        default='broad-dsp-spec-ops.joint_genotyping_chr20_dalio_3_updated')
+        default='broad-dsp-spec-ops.joint_genotyping_chr20_dalio_40000_updated')
     parser.add_value_provider_argument(
         '--output_bucket',
         type=str,
@@ -189,9 +189,10 @@ def run(argv=None):
       | 'Query Data from BQ' >>
       beam.io.Read(beam.io.BigQuerySource(
           query="""SELECT *
-FROM `{table}.pet` AS pet
-LEFT OUTER JOIN `{table}.vet` AS vet
-USING (position, sample)""".format(table=table),
+FROM `{table}.pet` AS pet_ir
+LEFT OUTER JOIN `{table}.vet_ir` AS vet
+USING (position, sample)
+WHERE ( position >= 10000000 AND position < 10100000 )""".format(table=table),
           use_standard_sql=True)
       )
   )

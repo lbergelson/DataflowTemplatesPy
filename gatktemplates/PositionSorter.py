@@ -189,7 +189,7 @@ def run(argv=None):
       | 'Query Data from BQ' >>
       beam.io.Read(beam.io.BigQuerySource(
           query="""SELECT *
-FROM `{table}.pet` AS pet_ir
+FROM `{table}.pet_ir` AS pet
 LEFT OUTER JOIN `{table}.vet_ir` AS vet
 USING (position, sample)
 WHERE ( position >= 10000000 AND position < 10100000 )""".format(table=table),
